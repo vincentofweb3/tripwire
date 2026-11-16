@@ -8,18 +8,23 @@ Built for the [Reactive Omni Buildathon](https://dorahacks.io/hackathon/reactive
 
 ## Live evidence
 
-> Deployed and filled in during the buildathon. Placeholders below are replaced with real values before submission; nothing here is asserted before it is true.
-
 | Item | Value |
 | --- | --- |
 | Public repo | https://github.com/vincentofweb3/tripwire |
-| Reactive contract (Lasna 5318007) | TBD-deploy |
-| Executor (Unichain Sepolia) | TBD-deploy |
-| Executor (Base Sepolia) | TBD-deploy |
-| Full loop — Unichain Sepolia (swap → reactive → callback) | TBD-deploy |
-| Full loop — Base Sepolia (swap → reactive → callback) | TBD-deploy |
-| Contract tests | 21 passed, 0 failed |
+| Reactive contract (Lasna 5318007) | [`0xcb581677E8C94e1aEF29033D27e57F0597C67e01`](https://lasna.reactscan.net/address/0xcb581677E8C94e1aEF29033D27e57F0597C67e01) (deploy tx [`0x6f7de1728075ac8e53fea23abef0a54ab6e60caaae5ed776c09f1b36118a9ea9`](https://lasna.reactscan.net/tx/0x6f7de1728075ac8e53fea23abef0a54ab6e60caaae5ed776c09f1b36118a9ea9)) |
+| Executor (Unichain Sepolia) | [`0x29D685cb7574443eD28A24541Dd8FeaD4C0F4A87`](https://sepolia.uniscan.xyz/address/0x29D685cb7574443eD28A24541Dd8FeaD4C0F4A87) (deploy tx [`0x1c05885782bd7641dd55de42ec352f2240cc909f55925fdaf4480d3c0b437c38`](https://sepolia.uniscan.xyz/tx/0x1c05885782bd7641dd55de42ec352f2240cc909f55925fdaf4480d3c0b437c38)) |
+| Executor (Base Sepolia) | [`0xDE9AE68d44e41bC2b658623b16dd4c1a2f5993A0`](https://sepolia.basescan.org/address/0xDE9AE68d44e41bC2b658623b16dd4c1a2f5993A0) (deploy tx [`0xf3c7d345359283295e002381091c51f89ffa11a103c1e2c807d7188ff9cc1270`](https://sepolia.basescan.org/tx/0xf3c7d345359283295e002381091c51f89ffa11a103c1e2c807d7188ff9cc1270)) |
+| Contract tests | 21 passed, 0 failed (`forge test`, Foundry 1.9.0) |
 | App | TBD-vercel |
+
+### Full loop, measured on both chains
+
+| Chain | Origin swap | Lasna reactive tx | Destination callback | Loop |
+| --- | --- | --- | --- | --- |
+| Base Sepolia (0.3% pool) | [`0xef50b91d049b04228e6e1e98d7860b765fd4f38e9e5e779cffaa20fab1fddb6d`](https://sepolia.basescan.org/tx/0xef50b91d049b04228e6e1e98d7860b765fd4f38e9e5e779cffaa20fab1fddb6d) (block 59662966) | [`0x24b7b4e344e93c15190d57282635120c03b1839d1a4fd9e398919ddee1afd8a8`](https://lasna.reactscan.net/tx/0x24b7b4e344e93c15190d57282635120c03b1839d1a4fd9e398919ddee1afd8a8) (block 8510219) | [`0x2dee510094f6955d46ccce7af5ab9c540e87274a1fb9e9dfa4f66e3f3c053e2d`](https://sepolia.basescan.org/tx/0x2dee510094f6955d46ccce7af5ab9c540e87274a1fb9e9dfa4f66e3f3c053e2d) (block 59662977, `OrderExecuted`) | **2.00s** |
+| Unichain Sepolia (0.3% pool) | [`0x84b2a69bd62d1c533a04b194b5d17fb992fa107e3f0956c47c0b8c2911424416`](https://sepolia.uniscan.xyz/tx/0x84b2a69bd62d1c533a04b194b5d17fb992fa107e3f0956c47c0b8c2911424416) (block 68004715) | [`0xd99864800b1b1e58e9145cb104733e7f8130c4d6ef589d2cdf67aa73243a85de`](https://lasna.reactscan.net/tx/0xd99864800b1b1e58e9145cb104733e7f8130c4d6ef589d2cdf67aa73243a85de) (block 8512738) | [`0x5b57e668dc0c9c536b0afada254d5c54a689437a3c61d8e5d30383c1c71607d0`](https://sepolia.uniscan.xyz/tx/0x5b57e668dc0c9c536b0afada254d5c54a689437a3c61d8e5d30383c1c71607d0) (block 68004717, `OrderExecuted`) | **2.00s** |
+
+Both fills executed `OrderExecuted` in the callback transaction and left the escrow fully drained to the orders' recipient (`amountOut` above each pool's `minOut` floor). Latency here is the wall-clock delta between the origin swap's block timestamp and the callback transaction's block timestamp — measured by `scripts/measure-loop.mjs` and recorded in `app/public/runs.json`.
 
 ## What it is
 
@@ -105,7 +110,7 @@ TRIPWIRE_PK=0x... REACTIVE_CONTRACT=0x... VITE_EXECUTOR_BASE_SEPOLIA=0x... \
 ```text
 contracts/   Foundry project (TripwireExecutor, TripwireReactive, 21 tests)
 app/         Vite + React + TS + wagmi/viem app (create/cancel orders, evidence page)
-scripts/     measure-loop.mjs (full-loop latency), deploy.sh
+scripts/     measure-loop.mjs (full-loop latency), deploy.sh, deploy-testnet*.sh
 docs/        ARCHITECTURE.md, SECURITY.md, LIMITATIONS.md, VERIFICATION.md
 ```
 
@@ -116,6 +121,7 @@ docs/        ARCHITECTURE.md, SECURITY.md, LIMITATIONS.md, VERIFICATION.md
 - **Bounded work.** Max 64 armed orders per chain+pool on the reactive side; `react()` stays well inside the 900k gas cap.
 - **No admin.** No owner, no upgrade, no pause, no fee, no rescue. The reactive contract's owner can only wire pools and executors (executors are set once per chain) and never touches funds.
 - **Base Sepolia rule honored.** Timestamps everywhere; no block-count logic.
+- **Reactive debt kills subscriptions — we learnt this the hard way in flight.** Lasna deactivates a reactive contract's subscriptions when its lREACT balance can't cover the execution fee (visible as `"Active": false` in `rnk_getFilters`). `TripwireReactive` therefore exposes `coverDebt()` so anyone can settle its debt and revive it; endow it with enough lREACT for the expected call volume. This is the single most important operational note for running Tripwire (and we endow it with 1 lREACT at deploy).
 
 ## License
 
