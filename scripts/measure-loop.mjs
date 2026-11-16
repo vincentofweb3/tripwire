@@ -94,6 +94,19 @@ function arg(name, fallback) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+async function withRetry(fn, tries = 6, delayMs = 2000) {
+  let lastErr;
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      await sleep(delayMs);
+    }
+  }
+  throw lastErr;
+}
+
 async function main() {
   const chainKey = arg("chain", "unichain-sepolia");
   const cfg = CHAINS[chainKey];
@@ -160,7 +173,7 @@ async function main() {
   }
 
   const swapReceipt = await origin.waitForTransactionReceipt({ hash: swapTx });
-  const swapBlock = await origin.getBlock({ blockNumber: swapReceipt.blockNumber });
+  const swapBlock = await withRetry(() => origin.getBlock({ blockNumber: swapReceipt.blockNumber }));
   const swapTime = Number(swapBlock.timestamp) * 1000;
   console.log(`origin swap landed in block ${swapBlock.number} @ ${new Date(swapTime).toISOString()}`);
 
@@ -180,7 +193,7 @@ async function main() {
     const hit = logs.find((l) => l.args.orderId === orderId);
     if (hit) {
       reactiveTx = hit.transactionHash;
-      reactiveBlock = await lasna.getBlock({ blockNumber: hit.blockNumber });
+      reactiveBlock = await withRetry(() => lasna.getBlock({ blockNumber: hit.blockNumber }));
       console.log(`reactive tx: ${reactiveTx} (block ${hit.blockNumber})`);
       break;
     }
@@ -202,7 +215,7 @@ async function main() {
     const hit = logs[0];
     if (hit) {
       callbackTx = hit.transactionHash;
-      callbackBlock = await origin.getBlock({ blockNumber: hit.blockNumber });
+      callbackBlock = await withRetry(() => origin.getBlock({ blockNumber: hit.blockNumber }));
       console.log(`callback tx: ${callbackTx} (block ${hit.blockNumber})`);
       break;
     }

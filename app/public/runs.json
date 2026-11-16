@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-16T18:41:10.122Z",
+  "updatedAt": "2026-11-16T19:27:42.795712+00:00",
   "runs": [
     {
       "chain": "Base Sepolia",
@@ -12,6 +12,18 @@
       "swapBlock": 59662966,
       "callbackBlock": 59662977,
       "note": "usdc swap across trigger"
+    },
+    {
+      "chain": "Unichain Sepolia",
+      "chainId": 1301,
+      "orderId": 1,
+      "swapTx": "0x84b2a69bd62d1c533a04b194b5d17fb992fa107e3f0956c47c0b8c2911424416",
+      "reactiveTx": "0xd99864800b1b1e58e9145cb104733e7f8130c4d6ef589d2cdf67aa73243a85de",
+      "callbackTx": "0x5b57e668dc0c9c536b0afada254d5c54a689437a3c61d8e5d30383c1c71607d0",
+      "loopMs": 2000,
+      "swapBlock": 68004715,
+      "callbackBlock": 68004717,
+      "note": "usdc swap across trigger (reactive 8512738)"
     }
   ]
 }
