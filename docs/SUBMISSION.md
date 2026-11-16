@@ -38,4 +38,4 @@ Unichain Sepolia:
 
 **Links:** App https://tripwire-alpha-three.vercel.app/ · Demo video TBD
 
-**Notes for judges:** Sourcify verification jobs were submitted for all deployments. Honest limitations are documented in `docs/LIMITATIONS.md` — thin testnet liquidity, 64-order book cap, testnet-only.
+**Notes for judges:** All three contracts are Sourcify-verified (repo.sourcify.dev). Honest limitations are documented in `docs/LIMITATIONS.md` — thin testnet liquidity, 64-order book cap, testnet-only.
