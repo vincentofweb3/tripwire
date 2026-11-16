@@ -33,3 +33,9 @@ This page tracks, claim by claim, how to verify everything Tripwire asserts. It 
 
 - Testnets only; no mainnet claims are made.
 - Verification on Base Sepolia/Unichain Sepolia explorers is manual where Sourcify does not index them; links are collected here as they are produced, not pre-asserted.
+
+
+## Live deployment
+
+- App: https://tripwire-alpha-three.vercel.app/ (Vercel, root `app/`, env `VITE_EXECUTOR_*` set at import)
+- `/evidence` renders `app/public/runs.json` — both recorded loops, 2.00s each.

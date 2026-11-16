@@ -15,7 +15,7 @@ Built for the [Reactive Omni Buildathon](https://dorahacks.io/hackathon/reactive
 | Executor (Unichain Sepolia) | [`0x29D685cb7574443eD28A24541Dd8FeaD4C0F4A87`](https://sepolia.uniscan.xyz/address/0x29D685cb7574443eD28A24541Dd8FeaD4C0F4A87) (deploy tx [`0x1c05885782bd7641dd55de42ec352f2240cc909f55925fdaf4480d3c0b437c38`](https://sepolia.uniscan.xyz/tx/0x1c05885782bd7641dd55de42ec352f2240cc909f55925fdaf4480d3c0b437c38)) |
 | Executor (Base Sepolia) | [`0xDE9AE68d44e41bC2b658623b16dd4c1a2f5993A0`](https://sepolia.basescan.org/address/0xDE9AE68d44e41bC2b658623b16dd4c1a2f5993A0) (deploy tx [`0xf3c7d345359283295e002381091c51f89ffa11a103c1e2c807d7188ff9cc1270`](https://sepolia.basescan.org/tx/0xf3c7d345359283295e002381091c51f89ffa11a103c1e2c807d7188ff9cc1270)) |
 | Contract tests | 21 passed, 0 failed (`forge test`, Foundry 1.9.0) |
-| App | TBD-vercel |
+| App (live, Vercel) | https://tripwire-alpha-three.vercel.app/ |
 
 ### Full loop, measured on both chains
 
