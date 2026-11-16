@@ -87,6 +87,12 @@ contract TripwireReactive is AbstractReactive {
         emit ExecutorAdded(chainId, executor);
     }
 
+    /// @notice Settles any outstanding debt owed to the system contract from this contract's balance.
+    /// @dev Public so anyone can revive the contract if a transient insolvency disables its subscriptions.
+    function coverDebt() external {
+        _coverDebt();
+    }
+
     /// @inheritdoc IReactive
     function react(LogRecord memory log_) external onlySystem {
         if (log_.topic0 == ORDER_CREATED_TOPIC0) {

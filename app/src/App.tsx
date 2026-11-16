@@ -3,6 +3,7 @@ import { Layout } from "./components/Layout";
 import { Home } from "./routes/Home";
 import { Trade } from "./routes/Trade";
 import { Evidence } from "./routes/Evidence";
+import { Recover } from "./routes/Recover";
 
 const router = createBrowserRouter([
   {
@@ -11,7 +12,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "trade", element: <Trade /> },
-      { path: "evidence", element: <Evidence /> }
+      { path: "evidence", element: <Evidence /> },
+      { path: "recovery", element: <Recover /> }
     ]
   }
 ]);

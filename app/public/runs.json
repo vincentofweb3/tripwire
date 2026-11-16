@@ -1,4 +1,17 @@
 {
-  "updatedAt": "pending first live loop",
-  "runs": []
+  "updatedAt": "2026-11-16T18:41:10.122Z",
+  "runs": [
+    {
+      "chain": "Base Sepolia",
+      "chainId": 84532,
+      "orderId": 1,
+      "swapTx": "0xef50b91d049b04228e6e1e98d7860b765fd4f38e9e5e779cffaa20fab1fddb6d",
+      "reactiveTx": "0x24b7b4e344e93c15190d57282635120c03b1839d1a4fd9e398919ddee1afd8a8",
+      "callbackTx": "0x2dee510094f6955d46ccce7af5ab9c540e87274a1fb9e9dfa4f66e3f3c053e2d",
+      "loopMs": 2000,
+      "swapBlock": 59662966,
+      "callbackBlock": 59662977,
+      "note": "usdc swap across trigger"
+    }
+  ]
 }

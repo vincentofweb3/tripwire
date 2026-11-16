@@ -152,3 +152,6 @@ body {
   .topbar { flex-wrap: wrap; gap: 10px; }
   .nav { margin-left: 0; order: 3; width: 100%; }
 }
+.pool-tab { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
+.pool-tab-price { font-family: var(--mono); font-size: 11px; color: var(--muted); font-weight: 400; }
+.pool-tab.active .pool-tab-price { color: var(--accent); }

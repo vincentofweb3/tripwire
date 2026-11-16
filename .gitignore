@@ -9,3 +9,4 @@ broadcast/
 .env.local
 !contracts/foundry.lock
 coverage/
+.deploy/

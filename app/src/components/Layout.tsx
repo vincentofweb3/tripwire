@@ -18,6 +18,7 @@ export function Layout() {
           </NavLink>
           <NavLink to="/trade">Trade</NavLink>
           <NavLink to="/evidence">Evidence</NavLink>
+          <NavLink to="/recovery">Recovery</NavLink>
           <a href="https://github.com/vincentofweb3/tripwire" target="_blank" rel="noreferrer">
             GitHub ↗
           </a>

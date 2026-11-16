@@ -23,6 +23,9 @@ export const baseSepolia = defineChain({
   testnet: true
 });
 
+export const UNICHAIN_SEPOLIA_DEFAULT_EXECUTOR = "0x29D685cb7574443eD28A24541Dd8FeaD4C0F4A87";
+export const BASE_SEPOLIA_DEFAULT_EXECUTOR = "0xDE9AE68d44e41bC2b658623b16dd4c1a2f5993A0";
+
 export const LASNA_CHAIN_ID = 5318007;
 export const LASNA_EXPLORER = "https://lasna.reactscan.net";
 

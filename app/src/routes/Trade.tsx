@@ -6,7 +6,8 @@ import {
   useReadContracts,
   useWriteContract,
   useWaitForTransactionReceipt,
-  usePublicClient
+  usePublicClient,
+  useSwitchChain
 } from "wagmi";
 import type { Address } from "viem";
 
@@ -28,10 +29,11 @@ import {
 export function Trade() {
   const { address } = useAccount();
   const chainId = useChainId();
+  const { switchChain, isPending: switching } = useSwitchChain();
   const cfg = CHAINS[chainId];
   const client = usePublicClient();
 
-  const [poolIdx, setPoolIdx] = useState(0);
+  const [poolIdx, setPoolIdx] = useState(1);
   const [sellWeth, setSellWeth] = useState(true);
   const [amount, setAmount] = useState("0.01");
   const [target, setTarget] = useState("40000");
@@ -54,6 +56,19 @@ export function Trade() {
   });
   const sqrtP = slot0.data?.[0];
   const live = sqrtP !== undefined ? usdcPerEth(sqrtP) : undefined;
+
+  const poolSlots = useReadContracts({
+    contracts: (cfg?.pools ?? []).map((p) => ({
+      chainId,
+      address: p.address,
+      abi: poolAbi,
+      functionName: "slot0" as const
+    })),
+    query: { enabled: !!cfg && SUPPORTED_CHAIN_IDS.includes(chainId as 1301 | 84532), refetchInterval: 4000 }
+  });
+  const poolPrices = poolSlots.data?.map((r) =>
+    r.status === "success" && r.result ? usdcPerEth((r.result as unknown as readonly [bigint, ...unknown[]])[0]) : undefined
+  );
 
   const balanceSell = useReadContract({
     chainId,
@@ -160,8 +175,16 @@ export function Trade() {
   if (!SUPPORTED_CHAIN_IDS.includes(chainId as 1301 | 84532) || !cfg || !pool || !sellToken) {
     return (
       <div className="panel center-panel">
-        <h2>Unsupported network</h2>
-        <p className="muted">Tripwire runs on Unichain Sepolia and Base Sepolia. Switch your wallet to one of them.</p>
+        <h2>Wrong network — your wallet is on chain {chainId}</h2>
+        <p className="muted">Tripwire executes on Unichain Sepolia and Base Sepolia. Switch with one click:</p>
+        <div className="hero-cta">
+          <button className="btn btn-primary btn-lg" disabled={switching} onClick={() => switchChain({ chainId: 1301 })}>
+            Unichain Sepolia
+          </button>
+          <button className="btn btn-primary btn-lg" disabled={switching} onClick={() => switchChain({ chainId: 84532 })}>
+            Base Sepolia
+          </button>
+        </div>
       </div>
     );
   }
@@ -222,7 +245,8 @@ export function Trade() {
           <div className="pool-tabs">
             {cfg.pools.map((p, i) => (
               <button key={p.address} className={`pool-tab${i === poolIdx ? " active" : ""}`} onClick={() => setPoolIdx(i)}>
-                {p.label}
+                <span>{p.label}</span>
+                <span className="pool-tab-price">{poolPrices?.[i] !== undefined ? formatUsdcPerEth(poolPrices[i]!) : "—"}</span>
               </button>
             ))}
           </div>

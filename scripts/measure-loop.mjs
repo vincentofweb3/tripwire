@@ -35,10 +35,10 @@ const CHAINS = {
     explorer: "https://sepolia.uniscan.xyz",
     usdc: "0x31d0220469e10c4e71834a79b1f276d740d3768f",
     weth: "0x4200000000000000000000000000000000000006",
-    pool: "0x8F463126bBEA80A10DF9Bf6FF5455B6B0292B34e", // 0.3%
+    pools: { 500: "0xBeAD5792bB6C299AB11Eaa425aC3fE11ebA47b3B", 3000: "0x8F463126bBEA80A10DF9Bf6FF5455B6B0292B34e" },
     router: "0xd1AAE39293221B77B0C71fBD6dCb7Ea29Bb5B166", // SwapRouter02
     fee: 3000,
-    executor: process.env.VITE_EXECUTOR_UNICHAIN_SEPOLIA
+    executor: process.env.VITE_EXECUTOR_UNICHAIN_SEPOLIA ?? "0x29D685cb7574443eD28A24541Dd8FeaD4C0F4A87"
   },
   "base-sepolia": {
     id: 84532,
@@ -47,14 +47,14 @@ const CHAINS = {
     explorer: "https://sepolia.basescan.org",
     usdc: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
     weth: "0x4200000000000000000000000000000000000006",
-    pool: "0x46880b404CD35c165EDdefF7421019F8dD25F4Ad", // 0.3%
+    pools: { 500: "0x94bfc0574FF48E92cE43d495376C477B1d0EEeC0", 3000: "0x46880b404CD35c165EDdefF7421019F8dD25F4Ad" },
     router: "0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4", // SwapRouter02
     fee: 3000,
-    executor: process.env.VITE_EXECUTOR_BASE_SEPOLIA
+    executor: process.env.VITE_EXECUTOR_BASE_SEPOLIA ?? "0xDE9AE68d44e41bC2b658623b16dd4c1a2f5993A0"
   }
 };
 const LASNA_RPC = process.env.LASNA_RPC ?? "https://lasna-rpc.rnk.dev";
-const REACTIVE = process.env.REACTIVE_CONTRACT; // address on Lasna
+const REACTIVE = process.env.REACTIVE_CONTRACT ?? "0xcb581677E8C94e1aEF29033D27e57F0597C67e01"; // TripwireReactive v2 on Lasna
 const ORDER_EXECUTED = parseAbiItem(
   "event OrderExecuted(uint256 indexed orderId, address indexed owner, uint160 sqrtPriceX96, uint256 amountOut)"
 );
@@ -98,7 +98,9 @@ async function main() {
   const chainKey = arg("chain", "unichain-sepolia");
   const cfg = CHAINS[chainKey];
   const side = arg("side", "weth"); // 'weth' (sell WETH) or 'usdc'
-  const amountIn = parseEther(arg("amount", "0.01").replace(/^/, ""));
+  const feeTier = Number(arg("fee", "500"));
+  if (!cfg.pools[feeTier]) throw new Error(`--fee must be one of ${Object.keys(cfg.pools).join(", ")}`);
+  const pool = cfg.pools[feeTier];
   const orderId = BigInt(arg("order-id", "1"));
   const skipSwap = process.argv.includes("--skip-swap");
 
@@ -143,7 +145,7 @@ async function main() {
         {
           tokenIn,
           tokenOut,
-          fee: cfg.fee,
+          fee: feeTier,
           recipient: account.address,
           amountIn: amountInRaw,
           amountOutMinimum: 0n,
@@ -165,7 +167,8 @@ async function main() {
   console.log("Watching Lasna for the reactive transaction (TripwireFired)…");
   let reactiveTx;
   let reactiveBlock = null;
-  const startBlock = swapBlock.number > 10n ? swapBlock.number - 10n : 0n;
+  const lasnaNow = await lasna.getBlockNumber();
+  const startBlock = lasnaNow > 200n ? lasnaNow - 200n : 0n;
   for (let attempt = 0; attempt < 90; attempt++) {
     const latest = await lasna.getBlockNumber();
     const logs = await lasna.getLogs({
