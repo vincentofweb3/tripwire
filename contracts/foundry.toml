@@ -1,0 +1,24 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+test = "test"
+script = "script"
+solc_version = "0.8.29"
+optimizer = true
+optimizer_runs = 800
+evm_version = "cancun"
+remappings = [
+  "forge-std/=lib/forge-std/src/",
+  "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+  "@reactive/src/=lib/reactive-lib-omni/src/",
+]
+
+[rpc_endpoints]
+lasna = "https://lasna-rpc.rnk.dev"
+unichain_sepolia = "https://sepolia.unichain.org"
+base_sepolia = "https://sepolia.base.org"
+
+[etherscan]
+unichain_sepolia = { key = "${UNISCAN_API_KEY}" }
+base_sepolia = { key = "${BASESCAN_API_KEY}" }
