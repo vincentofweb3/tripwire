@@ -4,6 +4,21 @@ function short(a: string) {
   return `${a.slice(0, 6)}…${a.slice(-4)}`;
 }
 
+const CHAIN_NAMES: Record<number, string> = {
+  1: "Ethereum Mainnet",
+  8453: "Base",
+  130: "Unichain",
+  1301: "Unichain Sepolia",
+  84532: "Base Sepolia",
+  5318007: "Reactive Lasna",
+  11155111: "Ethereum Sepolia"
+};
+
+function chainLabel(id: number | undefined) {
+  if (id === undefined) return "";
+  return CHAIN_NAMES[id] ?? `chain ${id}`;
+}
+
 export function ConnectButton() {
   const { address, isConnected, chainId } = useAccount();
   const { connect, connectors, isPending } = useConnect();
@@ -14,7 +29,7 @@ export function ConnectButton() {
       <button className="btn btn-ghost" onClick={() => disconnect()} title="Disconnect">
         <span className="dot dot-ok" />
         {short(address)}
-        <span className="muted">· {chainId === 1301 ? "Unichain Sepolia" : chainId === 84532 ? "Base Sepolia" : chainId}</span>
+        <span className="muted">· {chainLabel(chainId)}</span>
       </button>
     );
   }

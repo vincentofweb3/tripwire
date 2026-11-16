@@ -154,23 +154,78 @@ export function Trade() {
 
   useEffect(() => {
     if (!client || !cfg?.executor || !address || idList.length === 0) return;
-    client
-      .getLogs({
-        address: cfg.executor,
-        event: ORDER_EXECUTED_EVENT,
-        args: { owner: address },
-        fromBlock: 0n
-      })
-      .then((logs) => {
-        const map: Record<string, bigint> = {};
-        for (const log of logs) {
-          const l = log as unknown as { args: { orderId: bigint; amountOut: bigint } };
-          map[l.args.orderId.toString()] = l.args.amountOut;
+
+    const cacheKey = `tripwire:fills:${chainId}:${cfg.executor}:${address.toLowerCase()}`;
+    let cancelled = false;
+
+    const readCache = (): Record<string, bigint> => {
+      try {
+        const raw = localStorage.getItem(cacheKey);
+        if (!raw) return {};
+        const parsed = JSON.parse(raw) as { t: number; fills: Record<string, string> };
+        if (Date.now() - parsed.t > 5 * 60 * 1000) return {};
+        return Object.fromEntries(Object.entries(parsed.fills).map(([k, v]) => [k, BigInt(v)]));
+      } catch {
+        return {};
+      }
+    };
+
+    const writeCache = (map: Record<string, bigint>) => {
+      try {
+        const fills = Object.fromEntries(Object.entries(map).map(([k, v]) => [k, v.toString()]));
+        localStorage.setItem(cacheKey, JSON.stringify({ t: Date.now(), fills }));
+      } catch {
+        /* storage full / private mode — non-fatal */
+      }
+    };
+
+    const cached = readCache();
+    if (Object.keys(cached).length > 0) {
+      setFills(cached);
+      return;
+    }
+
+    (async () => {
+      const PAGE = 190n;
+      const map: Record<string, bigint> = {};
+      try {
+        const latest = await client.getBlockNumber();
+        const from = cfg.scanFrom;
+        if (from > latest) return;
+        const ranges: { fromBlock: bigint; toBlock: bigint }[] = [];
+        for (let lo = from; lo <= latest; lo += PAGE) {
+          const hi = lo + PAGE - 1n > latest ? latest : lo + PAGE - 1n;
+          ranges.push({ fromBlock: lo, toBlock: hi });
         }
-        setFills(map);
-      })
-      .catch(() => setFills({}));
-  }, [client, cfg?.executor, address, idList.length]);
+        // fetch in parallel batches of 8
+        for (let i = 0; i < ranges.length; i += 8) {
+          if (cancelled) return;
+          const batch = await Promise.all(
+            ranges.slice(i, i + 8).map((r) =>
+              client
+                .getLogs({ address: cfg.executor!, event: ORDER_EXECUTED_EVENT, args: { owner: address }, ...r })
+                .catch(() => [] as never[])
+            )
+          );
+          for (const logs of batch) {
+            for (const log of logs as unknown as { args: { orderId: bigint; amountOut: bigint } }[]) {
+              map[log.args.orderId.toString()] = log.args.amountOut;
+            }
+          }
+        }
+        if (!cancelled) {
+          setFills(map);
+          writeCache(map);
+        }
+      } catch {
+        if (!cancelled) setFills({});
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [client, cfg?.executor, cfg?.scanFrom, address, idList.length, chainId]);
 
   if (!SUPPORTED_CHAIN_IDS.includes(chainId as 1301 | 84532) || !cfg || !pool || !sellToken) {
     return (

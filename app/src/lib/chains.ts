@@ -43,6 +43,8 @@ export interface TripwireChainConfig {
   pools: PoolConfig[];
   callbackProxy: Address;
   executor: Address | undefined;
+  /** Hint block for log scans (covers the whole deployment); log RPCs cap range size. */
+  scanFrom: bigint;
 }
 
 const EXECUTOR_1301 = import.meta.env.VITE_EXECUTOR_UNICHAIN_SEPOLIA as Address | undefined;
@@ -59,7 +61,8 @@ export const CHAINS: Record<number, TripwireChainConfig> = {
       { fee: 3000, address: "0x8F463126bBEA80A10DF9Bf6FF5455B6B0292B34e", label: "USDC/WETH 0.3%" }
     ],
     callbackProxy: "0x775c9B990ADe401060B78D0e98684eEf8d2466C1",
-    executor: EXECUTOR_1301
+    executor: EXECUTOR_1301,
+    scanFrom: 67_800_000n
   },
   84532: {
     chain: baseSepolia,
@@ -71,7 +74,8 @@ export const CHAINS: Record<number, TripwireChainConfig> = {
       { fee: 3000, address: "0x46880b404CD35c165EDdefF7421019F8dD25F4Ad", label: "USDC/WETH 0.3%" }
     ],
     callbackProxy: "0x476F44b11F5C942c58f4c8E3d0300E5710743585",
-    executor: EXECUTOR_84532
+    executor: EXECUTOR_84532,
+    scanFrom: 59_640_000n
   }
 };
 
